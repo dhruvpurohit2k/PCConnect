@@ -12,7 +12,7 @@ import javax.jmdns.ServiceInfo;
 import javax.jmdns.ServiceListener;
 
 public class App {
-  private String userName;
+  private String userName = "DHURV";
   private JmDNS jmdns;
   private Scanner sc;
   private ServerSocket serverSocket;
@@ -24,8 +24,9 @@ public class App {
 
   public App() throws IOException {
     this.sc = new Scanner(System.in);
-    this.serverSocket = new ServerSocket(DEFAULT_PORT);
-    this.jmdns = JmDNS.create(InetAddress.getLocalHost());
+    // this.serverSocket = new ServerSocket(DEFAULT_PORT);
+    InetAddress add = InetAddress.getByName("192.168.1.5");
+    this.jmdns = JmDNS.create(add);
     this.serviceInfo =
         ServiceInfo.create(this.serviceType, this.userName, this.DEFAULT_PORT,
                            "A Device ready to send or recieve data");
@@ -35,11 +36,14 @@ public class App {
   private class MyServiceListener implements ServiceListener {
     @Override
     public void serviceAdded(ServiceEvent event) {
-      jmdns.requestServiceInfo(event.getType(), event.getName(), 1000);
+      System.out.println("Serice Found");
+      jmdns.requestServiceInfo(event.getType(), event.getName(), true);
+      System.out.println("OUT");
     }
 
     @Override
     public void serviceResolved(ServiceEvent event) {
+      System.out.println("Serice Resolved");
       ServiceInfo info = event.getInfo();
       availableDevices.put(info.getName(), info);
     }
@@ -55,7 +59,8 @@ public class App {
     jmdns.addServiceListener(this.serviceType, serviceListener);
     boolean flag = true;
     while (flag) {
-      System.out.println("List of Available Devices are - ");
+      System.out.printf("List of Available Devices are - %d\n",
+                        availableDevices.size());
       for (String deviceName : availableDevices.keySet()) {
         System.out.printf("-> %s\n", deviceName);
       }
@@ -73,7 +78,7 @@ public class App {
 
   public void shutdown() throws IOException {
     this.sc.close();
-    this.serverSocket.close();
+    // this.serverSocket.close();
     this.jmdns.unregisterAllServices();
     this.jmdns.close();
   }
